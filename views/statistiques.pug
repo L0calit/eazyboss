@@ -1,0 +1,44 @@
+html
+  head
+    link(rel='icon', type='image/png', href='https://cdn.glitch.com/0ae5a3d1-b854-4df6-8463-0ac7495d4ae3%2Ffavicon%20(1).ico?1521033238227')
+    // link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css', integrity='sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm', crossorigin='anonymous')
+    link(rel='stylesheet', tye='text/css', href='https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css')
+    link(href='https://fonts.googleapis.com/css?family=Rammetto+One' rel='stylesheet')
+    
+    meta(charset='utf-8')
+    title= EazyBoss
+  body.indigo.lighten-3
+    .row
+      .col.s12
+        h1.center-align(style="font-family: 'Rammetto One', cursive") EaZYBOss
+      .col.s12.m12
+        .card
+          .card-content
+            .card-title Nombre de prêts
+            div= nbPrets
+
+      .col.s12.m12
+        .card
+          .card-content
+            .card-title Utilisation des cartes
+            table.centered
+              thead
+                tr
+                  th Numero carte
+                  th Nombre d'utilisations
+              each val in nbCartes
+                tr 
+                  td= val._id
+                  td= val.count
+      
+      .col.s12.m12
+        .card
+          .card-content
+            .card-title Longueur moyenne d'un emprunt
+            
+    
+            
+    append scripts  
+      script(src='https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js')
+      script(src='https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js')
+      script(src='/select.js')            
