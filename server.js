@@ -589,6 +589,7 @@ apiRoutes.get('/stats', function (req, rep) {
             somme += unEmprunt.count * unEmprunt._id;
           });
           moy = somme/nbPrets;
+          console.log(moy);
             
           rep.render('statistiques.pug', { nbPrets: nbPrets, nbCartes: nbCartes, longueurEmprunt: longueurEmprunt});
           client.close();
