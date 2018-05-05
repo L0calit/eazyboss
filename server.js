@@ -186,7 +186,7 @@ apiRoutes.get("/status", function (req, rep) {
     console.log('Unable to connect to the mongoDB server. Error:', err);
   } else {
     // do some work here with the database.
-    if (req.query.status == "Tous les prêts rendus") {
+    if (req.query.status == "Prêts rendus") {
       client.db(process.env.DB).collection("rental").aggregate([{$lookup:
        {
          from: 'private',
@@ -196,7 +196,7 @@ apiRoutes.get("/status", function (req, rep) {
        }}, { $match: {rendu : true}}]).toArray(function (err, res) {
         rep.render('secret.pug', { tableau: res, rendu: true, token: req.query.token });
       });
-    } else if (req.query.status == "Tous les prêts en retard") {
+    } else if (req.query.status == "Prêts en retard") {
       client.db(process.env.DB).collection("rental").aggregate([{$lookup:
        {
          from: 'private',
