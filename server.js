@@ -19,7 +19,6 @@ var empruntPossible = ["1 semaine", "2 semaines", "1 mois"];
 app.set('superSecret', process.env.SECRET);
 
 var apiRoutes = express.Router();
-// TODO rajouter un champ cles connectes aléatoire permettant de verifier que la personne a bien été connecté
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -122,15 +121,17 @@ MongoClient.connect(url, function (err, client) {
           var token = jwt.sign(payload, app.get('superSecret'), {
             expiresIn: "1h"
           });
-          client.db(process.env.DB).collection("rental").aggregate([{$lookup:
-       {
-         from: 'private',
-         localField: 'numProf',
-         foreignField: 'code',
-         as: 'eleve'
-       }}]).toArray(function (err, res) {
-            rep.render('secret.pug', { tableau: calculeRes(res) , token: token});
-          });
+          client.db(process.env.DB).collection("private").find({}).toArray(function (err, professeurs) {
+              client.db(process.env.DB).collection("rental").aggregate([{$lookup:
+           {
+             from: 'private',
+             localField: 'numProf',
+             foreignField: 'code',
+             as: 'eleve'
+           }}]).toArray(function (err, res) {
+                rep.render('secret.pug', { tableau: calculeRes(res) , token: token, professeurs : professeurs});
+              });
+             });
         } else {
           rep.redirect('/error');
         }
