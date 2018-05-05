@@ -121,7 +121,6 @@ MongoClient.connect(url, function (err, client) {
           var token = jwt.sign(payload, app.get('superSecret'), {
             expiresIn: "1h"
           });
-          client.db(process.env.DB).collection("private").find({}).toArray(function (err, professeurs) {
               client.db(process.env.DB).collection("rental").aggregate([{$lookup:
            {
              from: 'private',
@@ -129,9 +128,8 @@ MongoClient.connect(url, function (err, client) {
              foreignField: 'code',
              as: 'eleve'
            }}]).toArray(function (err, res) {
-                rep.render('secret.pug', { tableau: calculeRes(res) , token: token, professeurs : professeurs});
+                rep.render('secret.pug', { tableau: calculeRes(res) , token: token});
               });
-             });
         } else {
           rep.redirect('/error');
         }
