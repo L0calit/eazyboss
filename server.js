@@ -33,18 +33,18 @@ var mailRetard = {
   from: 'xxxeazybossxxx@gmail.com',
   to: '',
   subject: '[Carte ZYBO] Retard !!!!!!!!',
-  text: 'Bonjour\n Vous n\'avez pas rendu votre carte Zybo à l\'heure.\n Veuillez la ramener au plus vite auprès de votre professeur! \n\n Cordialement, \n eaZYBOss'
+  text: 'Bonjour\n\n Vous n\'avez pas rendu votre carte Zybo à l\'heure.\n Veuillez la ramener au plus vite auprès de votre professeur! \n\n Cordialement, \n eaZYBOss'
 };
 
 var mailRappel = {
   from: 'xxxeazybossxxx@gmail.com',
   to: '',
   subject: '[Carte ZYBO] Rappel',
-  text: 'Bonjour, Vous n\'avez pas encore rendu votre carte Zybo. \n Merci de la rendre avant la date limite : '
+  text: 'Bonjour, \n\nVous n\'avez pas encore rendu votre carte Zybo. \n Merci de la rendre avant la date limite : '
 };
 
-function envoieMailRetard() {
-  mailRetard.to = "pauline.huguenel@grenoble-inp.org";
+function envoieMailRetard(mail) {
+  mailRetard.to = mail;
   transporter.sendMail(mailRetard, function(error, info){
     if (error) {
       console.log(error);
@@ -52,10 +52,11 @@ function envoieMailRetard() {
       console.log('Email sent: ' + info.response);
     }
   });
-}
+} 
 
-function envoieMailRappel() {
-  mailRappel.to = "pauline.huguenel@grenoble-inp.org";
+function envoieMailRappel(mail, dateLimite) {
+  mailRappel.to = mail;
+  mailRappel.text += dateLimite + ". \n\n Cordialement, \n eaZYBOss";
   transporter.sendMail(mailRappel, function(error, info){
     if (error) {
       console.log(error);
@@ -64,11 +65,6 @@ function envoieMailRappel() {
     }
   });
 }
-
-/*
-envoieMailRappel();
-setInterval(envoieMailRappel, 1000);
-*/
 
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -83,6 +79,89 @@ var format = require('util').format;
 //We need to work with "MongoClient" interface in order to connect to a mongodb server.
 var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://'+process.env.USER+':'+process.env.PASS+'@'+process.env.HOST+':'+process.env.DB_PORT+'/'+process.env.DB;
+
+function testRetard() {
+  MongoClient.connect(url, function (err, client) {
+    if (err) {
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    } else {
+      // do some work here with the database.
+      client.db(process.env.DB).collection("rental").find({}).toArray(function (err, result) {
+        var res = calculeRes(result);
+        for (document in res) {
+          if (res[document].status) {
+            client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
+              //envoieMailRetard(resultat[0].mail);
+            });
+          }
+        }
+      });
+    }
+  });
+} 
+
+testRetard()
+testRappel()
+setInterval(testRetard, 1000*60*60*24);
+setInterval(testRappel, 1000*60*60*24);
+
+function calculeRappel(res) {
+  for (var i in res) {
+    var dateEmprunt = new Date(res[i]._id.dateEmprunt);
+    var date = new Date() - dateEmprunt;
+    var test, test2;
+    var index = empruntPossible.indexOf(res[i].longEmprunt);
+    var dateAjouter = new Date(res[i]._id.dateEmprunt);
+    if (index == 0) {
+      test = 7 - 1;
+      test2 = 7;
+      dateAjouter.setDate(dateEmprunt.getDate() + 7);
+    } else if (index == 1) {
+      test = 14 - 2;
+      test2 = 14;
+      dateAjouter.setDate(dateEmprunt.getDate() + 14);
+    } else {
+      test = 30 - 5;
+      test2 = 30;
+      dateAjouter.setDate(dateEmprunt.getDate() + 30);
+    }
+    var now = dateAjouter;
+    var annee   = now.getFullYear();
+    var mois    = now.getMonth() + 1;
+    var jour    = now.getDate();
+    var dateLimite = annee+"-"+mois+"-"+jour;
+    if (Math.floor(date/1000/60/60/24) > test && Math.floor(date/1000/60/60/24) < test2) {
+      res[i].rappel = true;
+      res[i].dateLimite = dateLimite;
+    } else {
+      res[i].rappel = false;
+      res[i].dateLimite = dateLimite;
+    }
+  }
+  return res;
+}
+
+function testRappel() {
+  MongoClient.connect(url, function (err, client) {
+    if (err) {
+      console.log('Unable to connect to the mongoDB server. Error:', err);
+    } else {
+      // do some work here with the database.
+      client.db(process.env.DB).collection("rental").find({}).toArray(function (err, result) {
+        var res = calculeRappel(result);
+        for (document in res) {
+          //console.log(res[document]);
+          if (res[document].rappel) {
+            client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
+              if (err) console.log(err);
+              //envoieMailRappel(resultat[0].mail, res[document].dateLimite);
+            });
+          }
+        }
+      });
+    }
+  });
+}
 
 apiRoutes.post("/appAuthenticate", function (req, rep) {
   MongoClient.connect(url, function (err, client) {
@@ -586,12 +665,22 @@ apiRoutes.get('/stats', function (req, rep) {
           var moy = 0;
           var somme = 0;
           longueurEmprunt.forEach(function (unEmprunt) {
-            somme += unEmprunt.count * unEmprunt._id;
+            var duree = 0;
+            switch(unEmprunt._id) {
+              case "1 semaine":
+                duree=1;
+                break;
+              case "2 semaines":
+                duree=2;
+                break;
+              case "1 mois":
+                duree=4;
+                break;
+            }
+            somme += unEmprunt.count * duree;
           });
           moy = somme/nbPrets;
-          console.log(moy);
-            
-          rep.render('statistiques.pug', { nbPrets: nbPrets, nbCartes: nbCartes, longueurEmprunt: longueurEmprunt});
+          rep.render('statistiques.pug', { nbPrets: nbPrets, nbCartes: nbCartes, longueurEmprunt: moy});
           client.close();
           });
         });
