@@ -19,6 +19,7 @@ var empruntPossible = ["1 semaine", "2 semaines", "1 mois"];
 app.set('superSecret', process.env.SECRET);
 
 var apiRoutes = express.Router();
+// TODO rajouter un champ cles connectes aléatoire permettant de verifier que la personne a bien été connecté
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -32,14 +33,14 @@ var mailRetard = {
   from: 'xxxeazybossxxx@gmail.com',
   to: '',
   subject: '[Carte ZYBO] Retard !!!!!!!!',
-  text: 'Bonjour\n\n Vous n\'avez pas rendu votre carte Zybo à l\'heure.\n Veuillez la ramener au plus vite auprès de votre professeur! \n\n Cordialement, \n eaZYBOss'
+  text: 'Bonjour\n\nVous n\'avez pas rendu votre carte Zybo à l\'heure.\nVeuillez la ramener au plus vite auprès de votre professeur! \n\nCordialement, \neaZYBOss'
 };
 
 var mailRappel = {
   from: 'xxxeazybossxxx@gmail.com',
   to: '',
   subject: '[Carte ZYBO] Rappel',
-  text: 'Bonjour, \n\nVous n\'avez pas encore rendu votre carte Zybo. \n Merci de la rendre avant la date limite : '
+  text: 'Bonjour, \n\nVous n\'avez pas encore rendu votre carte Zybo. \nMerci de la rendre avant la date limite : '
 };
 
 function envoieMailRetard(mail) {
@@ -55,7 +56,7 @@ function envoieMailRetard(mail) {
 
 function envoieMailRappel(mail, dateLimite) {
   mailRappel.to = mail;
-  mailRappel.text += dateLimite + ". \n\n Cordialement, \n eaZYBOss";
+  mailRappel.text += dateLimite + ". \n\nCordialement, \neaZYBOss";
   transporter.sendMail(mailRappel, function(error, info){
     if (error) {
       console.log(error);
@@ -90,7 +91,7 @@ function testRetard() {
         for (document in res) {
           if (res[document].status) {
             client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
-              //envoieMailRetard(resultat[0].mail);
+              envoieMailRetard(resultat[0].mail);
             });
           }
         }
@@ -99,11 +100,13 @@ function testRetard() {
   });
 } 
 
+
+/*
 testRetard()
 testRappel()
 setInterval(testRetard, 1000*60*60*24);
 setInterval(testRappel, 1000*60*60*24);
-
+*/
 function calculeRappel(res) {
   for (var i in res) {
     var dateEmprunt = new Date(res[i]._id.dateEmprunt);
@@ -153,7 +156,7 @@ function testRappel() {
           if (res[document].rappel) {
             client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
               if (err) console.log(err);
-              //envoieMailRappel(resultat[0].mail, res[document].dateLimite);
+              envoieMailRappel(resultat[0].mail, res[document].dateLimite);
             });
           }
         }
@@ -200,15 +203,15 @@ MongoClient.connect(url, function (err, client) {
           var token = jwt.sign(payload, app.get('superSecret'), {
             expiresIn: "1h"
           });
-              client.db(process.env.DB).collection("rental").aggregate([{$lookup:
-           {
-             from: 'private',
-             localField: 'numProf',
-             foreignField: 'code',
-             as: 'eleve'
-           }}]).toArray(function (err, res) {
-                rep.render('secret.pug', { tableau: calculeRes(res) , token: token});
-              });
+          client.db(process.env.DB).collection("rental").aggregate([{$lookup:
+       {
+         from: 'private',
+         localField: 'numProf',
+         foreignField: 'code',
+         as: 'eleve'
+       }}]).toArray(function (err, res) {
+            rep.render('secret.pug', { tableau: calculeRes(res) , token: token});
+          });
         } else {
           rep.redirect('/error');
         }
@@ -352,6 +355,7 @@ var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
 var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
+  console.log(req.body);
 if (req.body.retour == "on") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -363,6 +367,7 @@ if (req.body.retour == "on") {
             "numProf": hashCode(req.body.loginProf),
             "numCarte": req.body.numCarte
       }).toArray(function (err, res) {
+        console.log(res)
           if (res.length == 0) {
             client.db(process.env.DB).collection("rental").aggregate([{$lookup:
        {
@@ -377,12 +382,12 @@ if (req.body.retour == "on") {
           } else {
             client.db(process.env.DB).collection("rental").updateOne({
                   "_id": {
-                      "numEtudiant": req.body.numEtudiant,
+                      "numEtudiant": res[0]._id.numEtudiant,
                       "dateEmprunt" : res[0]._id.dateEmprunt
                   },
-                  "numProf": hashCode(req.body.loginProf),
-                  "numCarte": req.body.numCarte,
-                  "longEmprunt" : req.body.duree
+                  "numProf": res[0].numProf,
+                  "numCarte": res[0].numCarte,
+                  "longEmprunt" : res[0].longEmprunt
             }, {
               $set: { "rendu": true }
             }, function (err) {
