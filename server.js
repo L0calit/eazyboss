@@ -101,12 +101,13 @@ function testRetard() {
 } 
 
 
-/*
+
 testRetard()
 testRappel()
 setInterval(testRetard, 1000*60*60*24);
 setInterval(testRappel, 1000*60*60*24);
-*/
+
+
 function calculeRappel(res) {
   for (var i in res) {
     var dateEmprunt = new Date(res[i]._id.dateEmprunt);
