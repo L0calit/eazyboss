@@ -103,7 +103,7 @@ function testRetard() {
 
 var http = require("http");
 setInterval(function() {
-    http.get("http://eazyboss.herokuapp.com");
+    http.get("http://<your app name>.herokuapp.com");
 }, 300000); // every 5 minutes (300000)
 
 testRetard()
@@ -137,7 +137,7 @@ function calculeRappel(res) {
     var mois    = now.getMonth() + 1;
     var jour    = now.getDate();
     var dateLimite = annee+"-"+mois+"-"+jour;
-    if (Math.floor(date/1000/60/60/24) > test && Math.floor(date/1000/60/60/24) < test2) {
+    if (Math.floor(date/1000/60/60/24) >= test && Math.floor(date/1000/60/60/24) < test2) {
       res[i].rappel = true;
       res[i].dateLimite = dateLimite;
     } else {
