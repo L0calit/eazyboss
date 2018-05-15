@@ -86,7 +86,7 @@ function testRetard() {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
       // do some work here with the database.
-      client.db(process.env.DB).collection("rental").find({}).toArray(function (err, result) {
+      client.db(process.env.DB).collection("rental").find({rendu: false}).toArray(function (err, result) {
         var res = calculeRes(result);
         for (document in res) {
           if (res[document].status) {
@@ -154,7 +154,7 @@ function testRappel() {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
       // do some work here with the database.
-      client.db(process.env.DB).collection("rental").find({}).toArray(function (err, result) {
+      client.db(process.env.DB).collection("rental").find({rendu : false}).toArray(function (err, result) {
         var res = calculeRappel(result);
         for (document in res) {
           //console.log(res[document]);
@@ -176,7 +176,7 @@ apiRoutes.post("/appAuthenticate", function (req, rep) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
     } else {
       // do some work here with the database.
-      client.db(process.env.DB).collection("private").find({ "code" : req.body.code}).toArray(function (err, res) {
+      client.db(process.env.DB).collection("private").find({ "code" : parseInt(req.body.code)}).toArray(function (err, res) {
           if (res.length != 0) {
             var payload = {
               login: res[0].login
@@ -184,9 +184,9 @@ apiRoutes.post("/appAuthenticate", function (req, rep) {
             var token = jwt.sign(payload, app.get('superSecret'), {
               expiresIn: "1h"
             });
-            rep.send({token : token, login : res[0].login});
+            rep.send({token : token, login : res[0]._id.login});
           } else {
-            rep.redirect('/error');
+            rep.send('error');
           }
           client.close();
       });
@@ -496,9 +496,9 @@ var now = new Date(Date.now());
 var annee   = now.getFullYear();
 var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
-var date = jour+"/"+mois+"/"+annee;
+var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
-if (req.body.retour == "on") {
+if (req.body.retour == "true") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -506,7 +506,7 @@ if (req.body.retour == "on") {
       // do some work here with the database.
       client.db(process.env.DB).collection("rental").find({
             "_id.numEtudiant" : req.body.etudiant,
-            "numProf": req.body.prof,
+            "numProf": parseInt(req.body.prof),
             "numCarte": req.body.carte,
             "longEmprunt" : req.body.duree
       }).toArray(function (err, res) {
@@ -515,7 +515,7 @@ if (req.body.retour == "on") {
                     "numEtudiant": req.body.etudiant,
                     "dateEmprunt" : res[0]._id.dateEmprunt
                 },
-                "numProf": req.body.prof,
+                "numProf": parseInt(req.body.prof),
                 "numCarte": req.body.carte,
                 "longEmprunt" : req.body.duree
           }, {
@@ -539,9 +539,9 @@ if (req.body.retour == "on") {
                 "numEtudiant": req.body.etudiant,
                 "dateEmprunt": date
             },
-            "numProf": req.body.prof,
+            "numProf": parseInt(req.body.prof),
             "numCarte": req.body.carte,
-            "rendu": true,
+            "rendu": false,
             "longEmprunt" : req.body.duree
       }, function (err) {
         if (err) throw err;
