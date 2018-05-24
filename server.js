@@ -360,7 +360,6 @@ var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
 var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
-  console.log(req.body);
 if (req.body.retour == "on") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -372,7 +371,6 @@ if (req.body.retour == "on") {
             "numProf": hashCode(req.body.loginProf),
             "numCarte": req.body.numCarte
       }).toArray(function (err, res) {
-        console.log(res)
           if (res.length == 0) {
             client.db(process.env.DB).collection("rental").aggregate([{$lookup:
        {
@@ -428,6 +426,7 @@ if (req.body.retour == "on") {
             "rendu": rendu,
             "longEmprunt" : req.body.duree
       }, function (err) {
+        if (err) console.log(err)
       });
       client.db(process.env.DB).collection("rental").aggregate([{$lookup:
        {
@@ -521,7 +520,7 @@ if (req.body.retour == "true") {
           }, {
             $set: { "rendu": true }
           }, function (err) {
-            if (err) throw err;
+            if (err) console.log(err);
             rep.send("OK");
           });
       });
@@ -544,7 +543,7 @@ if (req.body.retour == "true") {
             "rendu": false,
             "longEmprunt" : req.body.duree
       }, function (err) {
-        if (err) throw err;
+        if (err) console.log(err);
         rep.send("OK");
       });
     }
@@ -593,6 +592,7 @@ app.post('/secret/submit', upload.single('myFile'), function (req, res) {
       } else {
         // do some work here with the database.
         client.db(process.env.DB).collection("student").insertOne(jsonArrayObj, function (err) {
+          if (err) console.log(err);
         });
       }
     });
@@ -610,6 +610,7 @@ app.post('/secret/stats', upload.single('myFile'), function (req, res) {
       } else {
         // do some work here with the database.
         client.db(process.env.DB).collection("student").insertOne(jsonArrayObj, function (err) {
+          if (err) console.log(err);
         });
       }
     });
@@ -623,7 +624,7 @@ apiRoutes.post('/export', function (req, reponse) {
         console.log('Unable to connect to the mongoDB server. Error:', err);
       } else {
         client.db(process.env.DB).collection("rental").find({}).toArray(function (err, res) {
-          //const json2csvParser = new Json2csvParser({});
+          if (err) return console.log(err);
           var csv ='"Numéro Etudiant","Date d\'Emprunt","Numéro Prof","Numéro Carte","État du Rendu","Longueur Emprunt"\n';
           for (var i in res) {
             csv += "\"" + res[i]._id.numEtudiant + "\",";
@@ -633,7 +634,6 @@ apiRoutes.post('/export', function (req, reponse) {
             csv += "\"" + res[i].rendu + "\",";
             csv += "\"" + res[i].longEmprunt + "\"\n";
           }
-          //const csv = json2csvParser.parse(res);
           fs.writeFile("/tmp/eazyboss.csv", csv, function(err) {
             if(err) {
               return console.log(err);
