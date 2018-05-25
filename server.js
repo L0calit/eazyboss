@@ -586,13 +586,15 @@ app.post('/secret/submit', upload.single('myFile'), function (req, res) {
   csvtojson()
   .fromFile(req.file.path)
   .on('json',(jsonArrayObj)=>{ //when parse finished, result will be emitted here.
-    var eleve = {{"_id" : jsonArrayObj.num},{
+    var eleve = {
+      "_id" : {"num" : jsonArrayObj.num},
       "nom" : jsonArrayObj.nom,
       "prenom" : jsonArrayObj.prenom,
       "login" : jsonArrayObj.login,
       "mail" : jsonArrayObj.mail,
       "filiere" : jsonArrayObj.filiere,
-      "obs" : jsonArrayObj.obs}
+      "obs" : jsonArrayObj.obs
+    }
     MongoClient.connect(url, function (err, client) {
       if (err) {
         console.log('Unable to connect to the mongoDB server. Error:', err);
