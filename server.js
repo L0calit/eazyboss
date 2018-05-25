@@ -497,6 +497,7 @@ var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
 var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
+  console.log(req.body.retour);
 if (req.body.retour == "true") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
