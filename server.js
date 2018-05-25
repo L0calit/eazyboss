@@ -497,8 +497,8 @@ var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
 var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
-  console.log(req.body.retour);
-if (req.body.retour == "true") {
+  console.log(req.body);
+if (req.body.emprunt == "false") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
       console.log('Unable to connect to the mongoDB server. Error:', err);
