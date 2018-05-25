@@ -91,7 +91,7 @@ function testRetard() {
         for (document in res) {
           if (res[document].status) {
             client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
-              envoieMailRetard(resultat[0].mail);
+              if (resultat.length != 0) envoieMailRetard(resultat[0].mail);
             });
           }
         }
@@ -161,7 +161,7 @@ function testRappel() {
           if (res[document].rappel) {
             client.db(process.env.DB).collection("student").find({num : res[document]._id.numEtudiant}).toArray(function(err, resultat) {
               if (err) console.log(err);
-              envoieMailRappel(resultat[0].mail, res[document].dateLimite);
+              if (resultat.length != 0) envoieMailRappel(resultat[0].mail, res[document].dateLimite);
             });
           }
         }
