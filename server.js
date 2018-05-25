@@ -586,30 +586,19 @@ app.post('/secret/submit', upload.single('myFile'), function (req, res) {
   csvtojson()
   .fromFile(req.file.path)
   .on('json',(jsonArrayObj)=>{ //when parse finished, result will be emitted here.
+    var eleve = {{"_id" : jsonArrayObj.num},{
+      "nom" : jsonArrayObj.nom,
+      "prenom" : jsonArrayObj.prenom,
+      "login" : jsonArrayObj.login,
+      "mail" : jsonArrayObj.mail,
+      "filiere" : jsonArrayObj.filiere,
+      "obs" : jsonArrayObj.obs}
     MongoClient.connect(url, function (err, client) {
       if (err) {
         console.log('Unable to connect to the mongoDB server. Error:', err);
       } else {
         // do some work here with the database.
-        client.db(process.env.DB).collection("student").insertOne(jsonArrayObj, function (err) {
-          if (err) console.log(err);
-        });
-      }
-    });
-  });
-  res.sendFile(__dirname + '/views/index.html');
-});
-
-app.post('/secret/stats', upload.single('myFile'), function (req, res) {
-  csvtojson()
-  .fromFile(req.file.path)
-  .on('json',(jsonArrayObj)=>{ //when parse finished, result will be emitted here.
-    MongoClient.connect(url, function (err, client) {
-      if (err) {
-        console.log('Unable to connect to the mongoDB server. Error:', err);
-      } else {
-        // do some work here with the database.
-        client.db(process.env.DB).collection("student").insertOne(jsonArrayObj, function (err) {
+        client.db(process.env.DB).collection("student").insertOne(eleve, function (err) {
           if (err) console.log(err);
         });
       }
