@@ -24,20 +24,20 @@ var apiRoutes = express.Router();
 var transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'xxxeazybossxxx@gmail.com',
+    user: process.env.mail,
     pass: process.env.mdpMail
   }
 });
 
 var mailRetard = {
-  from: 'xxxeazybossxxx@gmail.com',
+  from: process.env.mail,
   to: '',
   subject: '[Carte ZYBO] Retard !!!!!!!!',
   text: 'Bonjour\n\nVous n\'avez pas rendu votre carte Zybo à l\'heure.\nVeuillez la ramener au plus vite auprès de votre professeur! \n\nCordialement, \neaZYBOss'
 };
 
 var mailRappel = {
-  from: 'xxxeazybossxxx@gmail.com',
+  from: process.env.mail,
   to: '',
   subject: '[Carte ZYBO] Rappel',
   text: 'Bonjour, \n\nVous n\'avez pas encore rendu votre carte Zybo. \nMerci de la rendre avant la date limite : '
