@@ -575,7 +575,7 @@ apiRoutes.get('/eleve/:numEtudiant/rendu/:status', function (req, rep) {
         rendu = true;
       }
       // do some work here with the database.
-      client.db(process.env.DB).collection("student").find({ num: req.params.numEtudiant}).toArray(function (err, res) {
+      client.db(process.env.DB).collection("student").find({_id : { num: req.params.numEtudiant}}).toArray(function (err, res) {
         rep.render('ficheEleve.pug', { tableau: res, rendu : rendu });
         client.close();
       });
