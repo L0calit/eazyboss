@@ -510,20 +510,22 @@ if (req.body.emprunt == "false") {
             "longEmprunt" : req.body.duree
       }).toArray(function (err, res) {
           if (err) console.log(err);
-          client.db(process.env.DB).collection("rental").updateOne({
-                "_id": {
-                    "numEtudiant": req.body.etudiant,
-                    "dateEmprunt" : res[0]._id.dateEmprunt
-                },
-                "numProf": parseInt(req.body.prof),
-                "numCarte": req.body.carte,
-                "longEmprunt" : req.body.duree
-          }, {
-            $set: { "rendu": true }
-          }, function (err) {
-            if (err) console.log(err);
-            rep.send("OK");
-          });
+          if (res.length != 0) {
+            client.db(process.env.DB).collection("rental").updateOne({
+                  "_id": {
+                      "numEtudiant": req.body.etudiant,
+                      "dateEmprunt" : res[0]._id.dateEmprunt
+                  },
+                  "numProf": parseInt(req.body.prof),
+                  "numCarte": req.body.carte,
+                  "longEmprunt" : req.body.duree
+            }, {
+              $set: { "rendu": true }
+            }, function (err) {
+              if (err) console.log(err);
+              rep.send("OK");
+            });
+          }
       });
 
     }
