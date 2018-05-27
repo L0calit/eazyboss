@@ -510,6 +510,8 @@ if (req.body.emprunt == "false") {
             "numCarte": req.body.carte,
             "longEmprunt" : req.body.duree
       }).toArray(function (err, res) {
+          console.log(res);
+          if (err) console.log(err);
           client.db(process.env.DB).collection("rental").updateOne({
                 "_id": {
                     "numEtudiant": req.body.etudiant,
