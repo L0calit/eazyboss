@@ -497,7 +497,6 @@ var mois    = now.getMonth() + 1;
 var jour    = now.getDate();
 var date = annee+"-"+mois+"-"+jour;
 var rendu = false;
-  console.log(req.body);
 if (req.body.emprunt == "false") {
   MongoClient.connect(url, function (err, client) {
     if (err) {
@@ -510,7 +509,6 @@ if (req.body.emprunt == "false") {
             "numCarte": req.body.carte,
             "longEmprunt" : req.body.duree
       }).toArray(function (err, res) {
-          console.log(res);
           if (err) console.log(err);
           client.db(process.env.DB).collection("rental").updateOne({
                 "_id": {
